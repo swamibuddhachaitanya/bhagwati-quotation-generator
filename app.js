@@ -16,15 +16,8 @@ var STANDARD_ITEMS = [
   { id: "commanSeal", name: "COMMAN SEAL", rate: 2200 }
 ];
 
-var RUBBER_STAMP_ITEMS = [
-  { id: "round", name: "Round", rate: 80 },
-  { id: "karta", name: "Karta", rate: 50 },
-  { id: "proprietor", name: "Proprietor", rate: 50 },
-  { id: "authorizedSignatory", name: "Authorized Signatory", rate: 50 },
-  { id: "partner", name: "Partner", rate: 50 }
-];
-
 var GST_RATE = 0.18;
+var GSTIN = "22AZZPS5834Q1Z6";
 
 /* ------------------------------------------------------------------ */
 /* Quotation state — one plain object (IDEA.md §7)                     */
@@ -33,10 +26,9 @@ var quotation = {
   customer: "",
   date: today(),
   gstEnabled: false,
-  gstNumber: "22AZZPS5834Q1Z6",
   signatureEnabled: true,
   standard: emptyQuantities(STANDARD_ITEMS),
-  rubber: emptyRubberStamps(RUBBER_STAMP_ITEMS),
+  rubber: { added: false, price: 0 },
   custom: []   // { id, name, qty, rate }
 };
 
@@ -55,14 +47,6 @@ function today() {
 function emptyQuantities(catalog) {
   var map = {};
   catalog.forEach(function (item) { map[item.id] = 0; });
-  return map;
-}
-
-function emptyRubberStamps(catalog) {
-  var map = {};
-  catalog.forEach(function (item) {
-    map[item.id] = { enabled: false, qty: 0, pricingMode: "normal", directPrice: 0 };
-  });
   return map;
 }
 
@@ -86,13 +70,6 @@ function money(value) {
 function customItemById(id) {
   for (var i = 0; i < quotation.custom.length; i++) {
     if (quotation.custom[i].id === id) return quotation.custom[i];
-  }
-  return null;
-}
-
-function catalogItem(catalog, id) {
-  for (var i = 0; i < catalog.length; i++) {
-    if (catalog[i].id === id) return catalog[i];
   }
   return null;
 }
@@ -145,7 +122,6 @@ function updateGstUi() {
   btn.textContent = quotation.gstEnabled ? "ON" : "OFF";
   btn.classList.toggle("is-on", quotation.gstEnabled);
   btn.setAttribute("aria-pressed", quotation.gstEnabled ? "true" : "false");
-  document.getElementById("gst-number").hidden = !quotation.gstEnabled;
 }
 
 function updateSignatureUi() {
@@ -201,124 +177,51 @@ function renderFixedSection(containerId, catalog, stateKey) {
 }
 
 /* ------------------------------------------------------------------ */
-/* Rubber Stamp section — individually selectable + direct pricing     */
+/* Rubber Stamp section — one simple item with a direct price          */
 /* ------------------------------------------------------------------ */
 
-function renderRubberSection() {
-  var container = document.getElementById("rubber-items");
+function renderRubberStamp() {
+  var container = document.getElementById("rubber-stamp");
   container.textContent = "";
 
-  RUBBER_STAMP_ITEMS.forEach(function (item) {
-    var rs = quotation.rubber[item.id];
-
-    var block = document.createElement("div");
-    block.className = "rubber-item";
-    block.dataset.id = item.id;
-
-    var row = document.createElement("div");
-    row.className = "item-row";
-    row.innerHTML =
-      '<span class="item-name"></span>' +
-      '<button type="button" class="btn rubber-toggle" aria-label="Toggle ' + item.name + '"></button>' +
-      '<div class="qty-control rubber-qty" hidden>' +
-      '<button type="button" class="qty-btn" data-action="dec" aria-label="Decrease quantity">−</button>' +
-      '<input type="number" class="qty-input" min="0" step="any" inputmode="numeric">' +
-      '<button type="button" class="qty-btn" data-action="inc" aria-label="Increase quantity">+</button>' +
-      '</div>' +
-      '<span class="item-rate rubber-rate" hidden></span>' +
-      '<span class="item-amount" hidden>₹0</span>';
-    row.querySelector(".item-name").textContent = item.name;
-    block.appendChild(row);
-
-    var pricing = document.createElement("div");
-    pricing.className = "pricing-row";
-    pricing.hidden = true;
-    pricing.innerHTML =
-      '<label class="pricing-option"><input type="radio" name="pricing-' + item.id + '" value="normal"> Rate × Quantity</label>' +
-      '<label class="pricing-option"><input type="radio" name="pricing-' + item.id + '" value="direct"> Direct Price</label>' +
-      '<label class="direct-price-field" hidden>Direct Price: <input type="number" class="direct-price" min="0" step="any" inputmode="decimal"></label>';
-    block.appendChild(pricing);
-
-    container.appendChild(block);
-    applyRubberRowState(item);
-  });
-}
-
-function applyRubberRowState(item) {
-  var rs = quotation.rubber[item.id];
-  var block = document.querySelector('.rubber-item[data-id="' + item.id + '"]');
-  if (!block) return;
-
-  var toggle = block.querySelector(".rubber-toggle");
-  toggle.textContent = rs.enabled ? "ON" : "OFF";
-  toggle.classList.toggle("is-on", rs.enabled);
-  toggle.setAttribute("aria-pressed", rs.enabled ? "true" : "false");
-
-  var on = rs.enabled;
-  block.querySelector(".rubber-qty").hidden = !on;
-  block.querySelector(".rubber-rate").hidden = !on;
-  block.querySelector(".item-amount").hidden = !on;
-  block.querySelector(".qty-input").value = rs.qty;
-  block.querySelector(".rubber-rate").textContent = money(item.rate);
-  block.querySelector(".pricing-row").hidden = !on;
-
-  block.querySelectorAll('.pricing-row input[type="radio"]').forEach(function (r) {
-    r.checked = (r.value === rs.pricingMode);
-  });
-
-  var directField = block.querySelector(".direct-price-field");
-  directField.hidden = rs.pricingMode !== "direct";
-  block.querySelector(".direct-price").value = rs.directPrice;
-}
-
-function wireRubberSection() {
-  var container = document.getElementById("rubber-items");
-
-  container.addEventListener("click", function (e) {
-    var block = e.target.closest(".rubber-item");
-    if (!block) return;
-    var id = block.dataset.id;
-    var rs = quotation.rubber[id];
-
-    if (e.target.classList.contains("rubber-toggle")) {
-      rs.enabled = !rs.enabled;
-      if (rs.enabled && rs.qty === 0) rs.qty = 1;
-      renderRubberSection();
+  if (!quotation.rubber.added) {
+    var addBtn = document.createElement("button");
+    addBtn.type = "button";
+    addBtn.id = "add-rubber-btn";
+    addBtn.className = "btn btn-secondary";
+    addBtn.textContent = "+ Add Rubber Stamp";
+    addBtn.addEventListener("click", function () {
+      quotation.rubber.added = true;
+      renderRubberStamp();
       updateAmounts();
-      return;
-    }
+    });
+    container.appendChild(addBtn);
+    return;
+  }
 
-    var btn = e.target.closest(".qty-btn");
-    if (btn) {
-      var input = block.querySelector(".qty-input");
-      rs.qty = toNonNegative((Number(input.value) || 0) + (btn.dataset.action === "inc" ? 1 : -1));
-      input.value = rs.qty;
-      updateAmounts();
-    }
-  });
+  var row = document.createElement("div");
+  row.className = "rubber-added";
+  row.innerHTML =
+    '<label class="direct-price-field">Direct Price: ' +
+    '<input type="number" id="rubber-price" class="direct-price" min="0" step="any" inputmode="decimal" value="0">' +
+    '</label>' +
+    '<span class="item-amount" id="rubber-amount">₹0</span>' +
+    '<button type="button" id="remove-rubber-btn" class="btn btn-danger">Remove</button>';
+  container.appendChild(row);
 
-  container.addEventListener("change", function (e) {
-    if (!(e.target.name && e.target.name.indexOf("pricing-") === 0)) return;
-    var block = e.target.closest(".rubber-item");
-    quotation.rubber[block.dataset.id].pricingMode = e.target.value;
-    applyRubberRowState(catalogItem(RUBBER_STAMP_ITEMS, block.dataset.id));
+  var priceInput = row.querySelector("#rubber-price");
+  priceInput.value = quotation.rubber.price;
+  priceInput.addEventListener("input", function (e) {
+    quotation.rubber.price = toNonNegative(e.target.value);
+    e.target.value = quotation.rubber.price;
     updateAmounts();
   });
 
-  container.addEventListener("input", function (e) {
-    var block = e.target.closest(".rubber-item");
-    if (!block) return;
-    var rs = quotation.rubber[block.dataset.id];
-
-    if (e.target.classList.contains("qty-input")) {
-      rs.qty = toNonNegative(e.target.value);
-      e.target.value = rs.qty;
-      updateAmounts();
-    } else if (e.target.classList.contains("direct-price")) {
-      rs.directPrice = toNonNegative(e.target.value);
-      e.target.value = rs.directPrice;
-      updateAmounts();
-    }
+  row.querySelector("#remove-rubber-btn").addEventListener("click", function () {
+    quotation.rubber.added = false;
+    quotation.rubber.price = 0;
+    renderRubberStamp();
+    updateAmounts();
   });
 }
 
@@ -385,15 +288,10 @@ function onCustomClick(e) {
 /* Calculation — subtotal, GST (18% of subtotal), grand total          */
 /* ------------------------------------------------------------------ */
 
-function rubberAmount(item, rs) {
-  if (!rs.enabled) return 0;
-  return rs.pricingMode === "direct" ? rs.directPrice : rs.qty * item.rate;
-}
-
 function updateAmounts() {
   var subtotal = 0;
   subtotal += updateFixedSection("standard-items", STANDARD_ITEMS, quotation.standard);
-  subtotal += updateRubberSection();
+  subtotal += updateRubberAmount();
   subtotal += updateCustomSection();
 
   var gst = quotation.gstEnabled ? Math.round(subtotal * GST_RATE * 100) / 100 : 0;
@@ -401,6 +299,7 @@ function updateAmounts() {
 
   document.getElementById("subtotal").textContent = money(subtotal);
   document.getElementById("gst-amount").textContent = money(gst);
+  document.getElementById("gst-line").hidden = !quotation.gstEnabled;
   document.getElementById("grand-total").textContent = money(grand);
 }
 
@@ -416,17 +315,11 @@ function updateFixedSection(containerId, catalog, quantities) {
   return total;
 }
 
-function updateRubberSection() {
-  var container = document.getElementById("rubber-items");
-  var total = 0;
-  RUBBER_STAMP_ITEMS.forEach(function (item) {
-    var rs = quotation.rubber[item.id];
-    var block = container.querySelector('.rubber-item[data-id="' + item.id + '"]');
-    var amount = rubberAmount(item, rs);
-    block.querySelector(".item-amount").textContent = money(amount);
-    total += amount;
-  });
-  return total;
+function updateRubberAmount() {
+  var amountEl = document.getElementById("rubber-amount");
+  var amount = quotation.rubber.added ? quotation.rubber.price : 0;
+  if (amountEl) amountEl.textContent = money(amount);
+  return amount;
 }
 
 function updateCustomSection() {
@@ -462,7 +355,7 @@ function buildPreview() {
 
   var gstRow = document.getElementById("preview-gst-row");
   gstRow.hidden = !quotation.gstEnabled;
-  document.getElementById("preview-gst-number").textContent = quotation.gstNumber;
+  document.getElementById("preview-gst-number").textContent = GSTIN;
 
   document.getElementById("preview-signature").hidden = !quotation.signatureEnabled;
 
@@ -480,17 +373,11 @@ function buildPreview() {
     addPreviewRow(tbody, sr, item.name, qty, item.rate, amount);
   });
 
-  RUBBER_STAMP_ITEMS.forEach(function (item) {
-    var rs = quotation.rubber[item.id];
-    if (!rs.enabled) return;
-    var amount = rubberAmount(item, rs);
-    if (amount <= 0) return;
+  if (quotation.rubber.added && quotation.rubber.price > 0) {
     sr++;
-    subtotal += amount;
-    var qty = rs.pricingMode === "direct" ? "—" : rs.qty;
-    var rate = rs.pricingMode === "direct" ? "—" : item.rate;
-    addPreviewRow(tbody, sr, item.name, qty, rate, amount);
-  });
+    subtotal += quotation.rubber.price;
+    addPreviewRow(tbody, sr, "RUBBER STAMP PER LINE", 1, quotation.rubber.price, quotation.rubber.price);
+  }
 
   quotation.custom.forEach(function (item) {
     var amount = item.qty * item.rate;
@@ -533,10 +420,8 @@ function addPreviewRow(tbody, sr, name, qty, rate, amount) {
 
 function init() {
   document.getElementById("date").value = quotation.date;
-  document.getElementById("gst-number").value = quotation.gstNumber;
   renderFixedSection("standard-items", STANDARD_ITEMS, "standard");
-  renderRubberSection();
-  wireRubberSection();
+  renderRubberStamp();
   renderCustomItems();
 
   document.getElementById("login-form").addEventListener("submit", onLogin);
@@ -550,9 +435,6 @@ function init() {
     quotation.gstEnabled = !quotation.gstEnabled;
     updateGstUi();
     updateAmounts();
-  });
-  document.getElementById("gst-number").addEventListener("input", function (e) {
-    quotation.gstNumber = e.target.value;
   });
   document.getElementById("signature-toggle").addEventListener("click", function () {
     quotation.signatureEnabled = !quotation.signatureEnabled;
