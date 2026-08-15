@@ -353,9 +353,17 @@ function buildPreview() {
   document.getElementById("preview-customer").textContent = quotation.customer || "—";
   document.getElementById("preview-date").textContent = formatDate(quotation.date);
 
-  var gstRow = document.getElementById("preview-gst-row");
-  gstRow.hidden = !quotation.gstEnabled;
-  document.getElementById("preview-gst-number").textContent = GSTIN;
+  /* GSTIN row — only exists in the DOM when GST is enabled. */
+  var metaRight = document.getElementById("preview-meta-right");
+  var oldGstRow = metaRight.querySelector("#preview-gst-row");
+  if (oldGstRow) oldGstRow.remove();
+  if (quotation.gstEnabled) {
+    var gstRow = document.createElement("p");
+    gstRow.id = "preview-gst-row";
+    gstRow.innerHTML = "<strong>GSTIN:</strong> <span id=\"preview-gst-number\"></span>";
+    gstRow.querySelector("#preview-gst-number").textContent = GSTIN;
+    metaRight.appendChild(gstRow);
+  }
 
   document.getElementById("preview-signature").hidden = !quotation.signatureEnabled;
 
@@ -390,10 +398,26 @@ function buildPreview() {
   var gst = quotation.gstEnabled ? Math.round(subtotal * GST_RATE * 100) / 100 : 0;
   var grand = Math.round((subtotal + gst) * 100) / 100;
 
-  document.getElementById("preview-subtotal").textContent = money(subtotal);
-  document.getElementById("preview-gst-line").hidden = !quotation.gstEnabled;
-  document.getElementById("preview-gst-amount").textContent = money(gst);
-  document.getElementById("preview-grand-total").textContent = money(grand);
+  /* Totals — GST row is only created in the DOM when GST is enabled. */
+  var totalsBox = document.getElementById("preview-totals");
+  totalsBox.textContent = "";
+  totalsBox.appendChild(totalRow("Subtotal", money(subtotal), false));
+  if (quotation.gstEnabled) {
+    totalsBox.appendChild(totalRow("GST (18%)", money(gst), false));
+  }
+  totalsBox.appendChild(totalRow("Grand Total", money(grand), true));
+}
+
+function totalRow(label, value, grand) {
+  var row = document.createElement("div");
+  row.className = grand ? "q-total-line q-grand-total" : "q-total-line";
+  var labelSpan = document.createElement("span");
+  labelSpan.textContent = label;
+  var valueSpan = document.createElement("span");
+  valueSpan.textContent = value;
+  row.appendChild(labelSpan);
+  row.appendChild(valueSpan);
+  return row;
 }
 
 function addPreviewRow(tbody, sr, name, qty, rate, amount) {

@@ -15,6 +15,11 @@
   box-sizing: border-box;
 }
 
+/* The hidden attribute must always win over author display rules. */
+[hidden] {
+  display: none !important;
+}
+
 body {
   margin: 0;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -388,21 +393,23 @@ input:focus {
 }
 
 .q-header {
-  display: flex;
-  align-items: center;
-  gap: 14px;
+  position: relative;
   border-bottom: 3px solid #000;
   padding-bottom: 10px;
+  min-height: 48px;
 }
 
 .q-logo {
+  position: absolute;
+  left: 0;
+  top: 0;
   height: 42px;
   width: auto;
   max-width: 45%;
 }
 
 .q-title-block {
-  flex: 1;
+  width: 100%;
   text-align: center;
 }
 

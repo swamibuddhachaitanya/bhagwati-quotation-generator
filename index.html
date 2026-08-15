@@ -118,9 +118,8 @@
           <div class="q-meta-left">
             <p><strong>TO:</strong> <span id="preview-customer"></span></p>
           </div>
-          <div class="q-meta-right">
+          <div class="q-meta-right" id="preview-meta-right">
             <p><strong>Date:</strong> <span id="preview-date"></span></p>
-            <p id="preview-gst-row" hidden><strong>GSTIN:</strong> <span id="preview-gst-number"></span></p>
           </div>
         </div>
 
@@ -137,11 +136,7 @@
           <tbody id="preview-table-body"></tbody>
         </table>
 
-        <div class="q-totals">
-          <div class="q-total-line"><span>Subtotal</span><span id="preview-subtotal"></span></div>
-          <div class="q-total-line" id="preview-gst-line" hidden><span>GST (18%)</span><span id="preview-gst-amount"></span></div>
-          <div class="q-total-line q-grand-total"><span>Grand Total</span><span id="preview-grand-total"></span></div>
-        </div>
+        <div class="q-totals" id="preview-totals"></div>
 
         <div class="q-footer">
           <div class="q-footer-right">
