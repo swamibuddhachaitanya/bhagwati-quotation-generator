@@ -48,6 +48,19 @@
     </section>
 
     <section class="card">
+      <h2>Options</h2>
+      <div class="option-row">
+        <span class="option-label">GST</span>
+        <button type="button" id="gst-toggle" class="btn btn-toggle" aria-pressed="false">OFF</button>
+        <input type="text" id="gst-number" placeholder="GST number" hidden>
+      </div>
+      <div class="option-row">
+        <span class="option-label">Signature</span>
+        <button type="button" id="signature-toggle" class="btn btn-toggle is-on" aria-pressed="true">ON</button>
+      </div>
+    </section>
+
+    <section class="card">
       <h2>Standard Items</h2>
       <div id="standard-items" class="items"></div>
     </section>
@@ -63,16 +76,81 @@
       <button type="button" id="add-item-btn" class="btn btn-secondary">+ Add Item</button>
     </section>
 
-    <section class="card total-card">
-      <span class="total-label">Total</span>
-      <span id="total" class="total-value">₹0</span>
+    <section class="card totals-card">
+      <div class="total-line">
+        <span>Subtotal</span>
+        <span id="subtotal" class="total-value-sm">₹0</span>
+      </div>
+      <div class="total-line">
+        <span>GST (18%)</span>
+        <span id="gst-amount" class="total-value-sm">₹0</span>
+      </div>
+      <div class="total-line grand-total-line">
+        <span>Grand Total</span>
+        <span id="grand-total" class="total-value">₹0</span>
+      </div>
     </section>
 
     <div class="actions">
-      <button type="button" id="preview-btn" class="btn btn-primary" disabled>Preview / Print</button>
-      <p class="muted">Preview / Print arrives in the next phase.</p>
+      <button type="button" id="preview-btn" class="btn btn-primary">Preview / Print</button>
     </div>
   </main>
+
+  <!-- Quotation preview -->
+  <section id="preview-section" hidden>
+    <div class="preview-controls">
+      <button type="button" id="back-btn" class="btn btn-secondary">← Back / Edit</button>
+      <button type="button" id="print-btn" class="btn btn-primary">Print</button>
+    </div>
+    <div class="preview-wrap">
+      <div class="quotation-page" id="quotation-page">
+        <div class="q-header">
+          <img src="assets/logo.png" alt="Bhagwati Printers logo" class="q-logo">
+          <div class="q-title-block">
+            <h1>BHAGWATI PRINTERS</h1>
+            <p class="q-doc-title">QUOTATION</p>
+          </div>
+        </div>
+
+        <div class="q-meta">
+          <div class="q-meta-left">
+            <p><strong>TO:</strong> <span id="preview-customer"></span></p>
+          </div>
+          <div class="q-meta-right">
+            <p><strong>Date:</strong> <span id="preview-date"></span></p>
+            <p id="preview-gst-row" hidden><strong>GSTIN:</strong> <span id="preview-gst-number"></span></p>
+          </div>
+        </div>
+
+        <table class="q-table">
+          <thead>
+            <tr>
+              <th class="col-sr">SR. NO.</th>
+              <th class="col-particulars">PARTICULARS</th>
+              <th class="col-qty">QTY.</th>
+              <th class="col-rate">RATE</th>
+              <th class="col-amount">AMOUNT</th>
+            </tr>
+          </thead>
+          <tbody id="preview-table-body"></tbody>
+        </table>
+
+        <div class="q-totals">
+          <div class="q-total-line"><span>Subtotal</span><span id="preview-subtotal"></span></div>
+          <div class="q-total-line" id="preview-gst-line" hidden><span>GST (18%)</span><span id="preview-gst-amount"></span></div>
+          <div class="q-total-line q-grand-total"><span>Grand Total</span><span id="preview-grand-total"></span></div>
+        </div>
+
+        <div class="q-footer">
+          <div class="q-footer-right">
+            <p class="q-for">FOR, BHAGWATI PRINTERS</p>
+            <img src="assets/bhagwati_signature.jpeg" alt="Proprietor signature" class="q-signature" id="preview-signature">
+            <p class="q-proprietor">PROPRIETOR</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <script src="app.js"></script>
 </body>
