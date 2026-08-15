@@ -7,10 +7,73 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <main class="container">
-    <h1>Bhagwati Printers Quotation Generator</h1>
-    <p>Quotation builder coming soon.</p>
+
+  <!-- Login screen -->
+  <section id="login-section" class="card login-card">
+    <h1>Bhagwati Printers</h1>
+    <p class="subtitle">Quotation Generator</p>
+    <form id="login-form" novalidate>
+      <div class="field">
+        <label for="username">Username</label>
+        <input type="text" id="username" autocomplete="username" autofocus>
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" autocomplete="current-password">
+      </div>
+      <p id="login-error" class="error" hidden></p>
+      <button type="submit" class="btn btn-primary">Login</button>
+    </form>
+  </section>
+
+  <!-- Quotation editor -->
+  <main id="editor-section" hidden>
+    <header class="editor-header">
+      <div>
+        <h1>BHAGWATI PRINTERS</h1>
+        <p class="subtitle">Quotation Generator</p>
+      </div>
+      <button type="button" id="logout-btn" class="btn btn-ghost">Logout</button>
+    </header>
+
+    <section class="card">
+      <div class="field">
+        <label for="customer">Customer / Company</label>
+        <input type="text" id="customer" placeholder="Customer name">
+      </div>
+      <div class="field">
+        <label for="date">Date</label>
+        <input type="date" id="date">
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Standard Items</h2>
+      <div id="standard-items" class="items"></div>
+    </section>
+
+    <section class="card">
+      <h2>Rubber Stamp</h2>
+      <div id="rubber-items" class="items"></div>
+    </section>
+
+    <section class="card">
+      <h2>Other Items</h2>
+      <div id="custom-items" class="items"></div>
+      <button type="button" id="add-item-btn" class="btn btn-secondary">+ Add Item</button>
+    </section>
+
+    <section class="card total-card">
+      <span class="total-label">Total</span>
+      <span id="total" class="total-value">₹0</span>
+    </section>
+
+    <div class="actions">
+      <button type="button" id="preview-btn" class="btn btn-primary" disabled>Preview / Print</button>
+      <p class="muted">Preview / Print arrives in the next phase.</p>
+    </div>
   </main>
+
   <script src="app.js"></script>
 </body>
 </html>
