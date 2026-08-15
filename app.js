@@ -384,7 +384,7 @@ function buildPreview() {
   if (quotation.rubber.added && quotation.rubber.price > 0) {
     sr++;
     subtotal += quotation.rubber.price;
-    addPreviewRow(tbody, sr, "RUBBER STAMP PER LINE", 1, quotation.rubber.price, quotation.rubber.price);
+    addPreviewRow(tbody, sr, "RUBBER STAMP", 1, quotation.rubber.price, quotation.rubber.price);
   }
 
   quotation.custom.forEach(function (item) {

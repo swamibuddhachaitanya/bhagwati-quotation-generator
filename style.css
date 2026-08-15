@@ -548,6 +548,121 @@ input:focus {
 }
 
 /* ------------------------------------------------------------------ */
+/* Responsive — mobile / tablet (screen only; print rules untouched)   */
+/* ------------------------------------------------------------------ */
+
+@media screen and (max-width: 768px) {
+  body {
+    padding: 16px 12px;
+  }
+
+  .login-card {
+    margin: 24px auto;
+  }
+
+  .card {
+    padding: 14px 14px;
+  }
+
+  /* Larger, comfortable touch targets for quantity controls */
+  .qty-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 1.25rem;
+  }
+
+  .qty-input {
+    width: 64px;
+    padding: 6px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  /* Standard item rows: item name takes its own line, controls wrap */
+  .item-row .item-name {
+    flex: 1 1 100%;
+  }
+
+  .item-row .item-rate,
+  .item-row .item-amount {
+    text-align: left;
+  }
+
+  /* Custom item rows: stack vertically */
+  .custom-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .custom-row .custom-name,
+  .custom-row .custom-qty,
+  .custom-row .custom-rate {
+    flex: 1 1 100%;
+  }
+
+  .custom-row .item-amount {
+    text-align: left;
+  }
+
+  .custom-row .remove-btn {
+    align-self: flex-start;
+  }
+
+  /* Rubber Stamp added row */
+  .rubber-added {
+    align-items: stretch;
+  }
+
+  .direct-price-field {
+    flex: 1 1 100%;
+  }
+
+  .direct-price {
+    width: 100%;
+  }
+
+  /* Options */
+  .option-row {
+    justify-content: space-between;
+  }
+
+  /* Totals card fills the width */
+  .totals-card {
+    max-width: 100%;
+    margin-left: 0;
+  }
+
+  /* Primary action fills the width */
+  .actions .btn-primary {
+    width: 100%;
+  }
+
+  /* Preview controls stack for easy touch */
+  .preview-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    max-width: 100%;
+  }
+
+  .preview-controls .btn-primary,
+  .preview-controls .btn-secondary {
+    width: 100%;
+    padding: 12px;
+  }
+
+  /* Contain the fixed-width A4 page so it scrolls inside the wrapper
+     rather than expanding the phone page. The A4 proportions are
+     intentionally left unchanged. */
+  #preview-section {
+    width: 100%;
+    max-width: 210mm;
+    margin: 0 auto;
+  }
+}
+
+/* ------------------------------------------------------------------ */
 /* Print — A4 portrait, quotation only                                 */
 /* ------------------------------------------------------------------ */
 
