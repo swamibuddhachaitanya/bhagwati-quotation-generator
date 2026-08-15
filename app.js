@@ -110,6 +110,9 @@ function showLogin() {
   document.getElementById("login-section").hidden = false;
   document.getElementById("login-error").hidden = true;
   document.getElementById("password").value = "";
+  document.getElementById("password").type = "password";
+  var showPw = document.getElementById("show-password");
+  if (showPw) showPw.checked = false;
   document.getElementById("username").focus();
 }
 
@@ -450,6 +453,9 @@ function init() {
 
   document.getElementById("login-form").addEventListener("submit", onLogin);
   document.getElementById("logout-btn").addEventListener("click", showLogin);
+  document.getElementById("show-password").addEventListener("change", function () {
+    document.getElementById("password").type = this.checked ? "text" : "password";
+  });
   document.getElementById("add-item-btn").addEventListener("click", addCustomItem);
   document.getElementById("preview-btn").addEventListener("click", showPreview);
   document.getElementById("back-btn").addEventListener("click", backToEditor);
