@@ -466,6 +466,11 @@ input:focus {
   margin: 2px 0;
 }
 
+.q-serial-number {
+  color: red;
+  font-weight: 600;
+}
+
 .q-table {
   width: 100%;
   border-collapse: collapse;
@@ -542,7 +547,7 @@ input:focus {
 }
 
 .q-footer-right {
-  text-align: center;
+  text-align: right;
 }
 
 .q-for {

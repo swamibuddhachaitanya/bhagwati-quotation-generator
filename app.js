@@ -25,6 +25,8 @@ var GSTIN = "22AZZPS5834Q1Z6";
 var quotation = {
   customer: "",
   date: today(),
+  serialNumber: "",
+  discountAmount: 0,
   gstEnabled: false,
   signatureEnabled: true,
   standard: emptyQuantities(STANDARD_ITEMS),
@@ -297,10 +299,18 @@ function updateAmounts() {
   subtotal += updateRubberAmount();
   subtotal += updateCustomSection();
 
-  var gst = quotation.gstEnabled ? Math.round(subtotal * GST_RATE * 100) / 100 : 0;
-  var grand = Math.round((subtotal + gst) * 100) / 100;
+  /* Discount is a fixed rupee amount, clamped to the subtotal. */
+  var discount = Math.min(quotation.discountAmount, subtotal);
+  var discountPct = subtotal > 0 ? Math.round((discount / subtotal) * 10000) / 100 : 0;
+  var taxable = Math.round((subtotal - discount) * 100) / 100;
+
+  /* GST is applied to the discounted (taxable) amount, only when enabled. */
+  var gst = quotation.gstEnabled ? Math.round(taxable * GST_RATE * 100) / 100 : 0;
+  var grand = Math.round((taxable + gst) * 100) / 100;
 
   document.getElementById("subtotal").textContent = money(subtotal);
+  document.getElementById("discount-amount").textContent = money(discount) + " (" + discountPct + "%)";
+  document.getElementById("discount-line").hidden = discount <= 0;
   document.getElementById("gst-amount").textContent = money(gst);
   document.getElementById("gst-line").hidden = !quotation.gstEnabled;
   document.getElementById("grand-total").textContent = money(grand);
@@ -356,8 +366,19 @@ function buildPreview() {
   document.getElementById("preview-customer").textContent = quotation.customer || "—";
   document.getElementById("preview-date").textContent = formatDate(quotation.date);
 
-  /* GSTIN row — only exists in the DOM when GST is enabled. */
+  /* Serial number row — only exists in the DOM when a serial is entered. */
   var metaRight = document.getElementById("preview-meta-right");
+  var oldSerialRow = metaRight.querySelector("#preview-serial-row");
+  if (oldSerialRow) oldSerialRow.remove();
+  if (quotation.serialNumber) {
+    var serialRow = document.createElement("p");
+    serialRow.id = "preview-serial-row";
+    serialRow.innerHTML = "<strong>Serial No.:</strong> <span class=\"q-serial-number\"></span>";
+    serialRow.querySelector(".q-serial-number").textContent = quotation.serialNumber;
+    metaRight.appendChild(serialRow);
+  }
+
+  /* GSTIN row — only exists in the DOM when GST is enabled. */
   var oldGstRow = metaRight.querySelector("#preview-gst-row");
   if (oldGstRow) oldGstRow.remove();
   if (quotation.gstEnabled) {
@@ -398,13 +419,20 @@ function buildPreview() {
     addPreviewRow(tbody, sr, item.name || "—", item.qty, item.rate, amount);
   });
 
-  var gst = quotation.gstEnabled ? Math.round(subtotal * GST_RATE * 100) / 100 : 0;
-  var grand = Math.round((subtotal + gst) * 100) / 100;
+  /* Discount — fixed rupee amount, clamped to subtotal; percentage of subtotal. */
+  var discount = Math.min(quotation.discountAmount, subtotal);
+  var discountPct = subtotal > 0 ? Math.round((discount / subtotal) * 10000) / 100 : 0;
+  var taxable = Math.round((subtotal - discount) * 100) / 100;
+  var gst = quotation.gstEnabled ? Math.round(taxable * GST_RATE * 100) / 100 : 0;
+  var grand = Math.round((taxable + gst) * 100) / 100;
 
-  /* Totals — GST row is only created in the DOM when GST is enabled. */
+  /* Totals — discount and GST rows are only created in the DOM when active. */
   var totalsBox = document.getElementById("preview-totals");
   totalsBox.textContent = "";
   totalsBox.appendChild(totalRow("Subtotal", money(subtotal), false));
+  if (discount > 0) {
+    totalsBox.appendChild(totalRow("Discount", money(discount) + " (" + discountPct + "%)", false));
+  }
   if (quotation.gstEnabled) {
     totalsBox.appendChild(totalRow("GST (18%)", money(gst), false));
   }
@@ -447,6 +475,8 @@ function addPreviewRow(tbody, sr, name, qty, rate, amount) {
 
 function init() {
   document.getElementById("date").value = quotation.date;
+  document.getElementById("serial-number").value = quotation.serialNumber;
+  document.getElementById("discount").value = quotation.discountAmount;
   renderFixedSection("standard-items", STANDARD_ITEMS, "standard");
   renderRubberStamp();
   renderCustomItems();
@@ -480,6 +510,14 @@ function init() {
   });
   document.getElementById("date").addEventListener("change", function (e) {
     quotation.date = e.target.value;
+  });
+  document.getElementById("serial-number").addEventListener("input", function (e) {
+    quotation.serialNumber = e.target.value;
+  });
+  document.getElementById("discount").addEventListener("input", function (e) {
+    quotation.discountAmount = toNonNegative(e.target.value);
+    e.target.value = quotation.discountAmount;
+    updateAmounts();
   });
 
   updateGstUi();

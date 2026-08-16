@@ -51,6 +51,14 @@
         <label for="date">Date</label>
         <input type="date" id="date">
       </div>
+      <div class="field">
+        <label for="serial-number">Serial Number</label>
+        <input type="text" id="serial-number" placeholder="e.g. Q-001">
+      </div>
+      <div class="field">
+        <label for="discount">Discount (₹)</label>
+        <input type="number" id="discount" min="0" step="any" inputmode="decimal" value="0">
+      </div>
     </section>
 
     <section class="card">
@@ -85,6 +93,10 @@
       <div class="total-line">
         <span>Subtotal</span>
         <span id="subtotal" class="total-value-sm">₹0</span>
+      </div>
+      <div class="total-line" id="discount-line" hidden>
+        <span>Discount</span>
+        <span id="discount-amount" class="total-value-sm">₹0</span>
       </div>
       <div class="total-line" id="gst-line" hidden>
         <span>GST (18%)</span>
