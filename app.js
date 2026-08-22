@@ -27,6 +27,7 @@ var quotation = {
   date: today(),
   serialNumber: "",
   discountAmount: 0,
+  quotationTypeEnabled: true,   // ON = QUOTATION, OFF = BILL
   gstEnabled: false,
   signatureEnabled: true,
   standard: emptyQuantities(STANDARD_ITEMS),
@@ -134,6 +135,15 @@ function updateSignatureUi() {
   btn.textContent = quotation.signatureEnabled ? "ON" : "OFF";
   btn.classList.toggle("is-on", quotation.signatureEnabled);
   btn.setAttribute("aria-pressed", quotation.signatureEnabled ? "true" : "false");
+}
+
+function updateDocTypeUi() {
+  var btn = document.getElementById("doc-type-toggle");
+  var on = quotation.quotationTypeEnabled;
+  btn.textContent = on ? "ON" : "OFF";
+  btn.classList.toggle("is-on", on);
+  btn.setAttribute("aria-pressed", on ? "true" : "false");
+  document.getElementById("doc-type-hint").textContent = on ? "→ QUOTATION" : "→ BILL";
 }
 
 /* ------------------------------------------------------------------ */
@@ -365,6 +375,8 @@ function backToEditor() {
 function buildPreview() {
   document.getElementById("preview-customer").textContent = quotation.customer || "—";
   document.getElementById("preview-date").textContent = formatDate(quotation.date);
+  document.getElementById("preview-doc-title").textContent =
+    quotation.quotationTypeEnabled ? "QUOTATION" : "BILL";
 
   /* Serial number row — only exists in the DOM when a serial is entered. */
   var metaRight = document.getElementById("preview-meta-right");
@@ -500,6 +512,10 @@ function init() {
     quotation.signatureEnabled = !quotation.signatureEnabled;
     updateSignatureUi();
   });
+  document.getElementById("doc-type-toggle").addEventListener("click", function () {
+    quotation.quotationTypeEnabled = !quotation.quotationTypeEnabled;
+    updateDocTypeUi();
+  });
 
   var customContainer = document.getElementById("custom-items");
   customContainer.addEventListener("input", onCustomInput);
@@ -522,6 +538,7 @@ function init() {
 
   updateGstUi();
   updateSignatureUi();
+  updateDocTypeUi();
   updateAmounts();
 }
 

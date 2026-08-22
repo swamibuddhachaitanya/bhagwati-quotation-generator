@@ -231,6 +231,12 @@ input:focus {
   min-width: 96px;
 }
 
+.doc-type-hint {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
 /* Item rows */
 .items {
   display: flex;

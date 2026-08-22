@@ -64,6 +64,11 @@
     <section class="card">
       <h2>Options</h2>
       <div class="option-row">
+        <span class="option-label">Document Type</span>
+        <button type="button" id="doc-type-toggle" class="btn btn-toggle is-on" aria-pressed="true">ON</button>
+        <span id="doc-type-hint" class="doc-type-hint">→ QUOTATION</span>
+      </div>
+      <div class="option-row">
         <span class="option-label">GST</span>
         <button type="button" id="gst-toggle" class="btn btn-toggle" aria-pressed="false">OFF</button>
       </div>
@@ -128,7 +133,7 @@
             <p class="q-address">INSIDE OF ANAND PLAZA, SHANKAR NAGAR ROAD, GALI NO. 2,<br>
               LODHIPARA CHOWK, RAIPUR (C.G.)</p>
             <p class="q-address q-mob">MOB.: 9893410410</p>
-            <p class="q-doc-title">QUOTATION</p>
+            <p class="q-doc-title" id="preview-doc-title">QUOTATION</p>
           </div>
         </div>
 
